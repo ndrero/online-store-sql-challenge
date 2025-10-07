@@ -251,7 +251,7 @@ LIMIT 10
 
 -- Returns the names of all products that have never been sold
 SELECT p.name
-FROc.firstname, ' ', c.lastnameIN (
+FROM products.id NOT IN (
     SELECT oi.product_id
     FROM order_items oi
 )
@@ -266,3 +266,11 @@ LEFT JOIN customers c
 ON c.id = o.customer_id
 GROUP BY CONCAT(c.firstname, ' ', c.lastname)
 
+
+-- Create VIEW for all joins
+SELECT *
+FROM order_items
+
+--
+SELECT customers
+FROM customers
