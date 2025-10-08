@@ -29,3 +29,36 @@ FROM orders o
 LEFT JOIN customers c 
 ON c.id = o.customer_id
 GROUP BY CONCAT(c.firstname, ' ', c.lastname)
+
+-- List the customers whose total spending is greater than the overall average of all customers
+SELECT 
+    CONCAT(c.firstname, ' ', c.lastname) AS client,
+    SUM(o.total) total_spent
+FROM order_items oi
+INNER JOIN orders o
+ON o.id = oi.order_id
+FULL JOIN products p
+ON p.id = oi.product_id
+FULL JOIN customers c
+ON c.id = o.customer_id
+GROUP BY CONCAT(c.firstname, ' ', c.lastname)
+HAVING SUM(o.total) > (
+    SELECT 
+        AVG(o2.total)
+    FROM orders o2
+) 
+
+/* Classify the products into two groups: 'Trending' if sold more than 10 times, 
+and 'Low demand' if sold fewer than 3 times */
+SELECT 
+    p.name AS product_name,
+    COUNT(oi.product_id) AS product_count,
+    CASE 
+        WHEN COUNT(oi.product_id) > 10 THEN  'Em alta'
+        WHEN COUNT(oi.product_id) < 5 THEN  'Em baixa'
+        ELSE 'Neutro'
+    END AS status
+FROM order_items oi
+INNER JOIN products p
+ON p.id = oi.product_id
+GROUP BY(p.name)
