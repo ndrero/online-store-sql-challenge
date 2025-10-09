@@ -62,3 +62,31 @@ FROM order_items oi
 INNER JOIN products p
 ON p.id = oi.product_id
 GROUP BY(p.name)
+
+
+-- Lists all orders whose total value is higher than the average total of all orders in the same month.
+WITH avg_total_by_month AS (
+    SELECT 
+    id_order,
+    client_name,
+    total,
+    EXTRACT(MONTH FROM order_date) AS month,
+    ROUND(
+        AVG(total) OVER (PARTITION BY 
+            EXTRACT(MONTH FROM order_date))
+        ,2) AS avg_total_by_month
+    FROM vw_customers_orders
+)
+SELECT * 
+FROM avg_total_by_month a
+WHERE a.total > a.avg_total_by_month;
+
+
+-- Shows the most sold product
+SELECT
+    product,
+    SUM(quantity_pursached) AS quantity_pursached
+FROM vw_orders_with_products
+GROUP BY product
+ORDER BY quantity_pursached DESC
+LIMIT 1
