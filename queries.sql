@@ -90,3 +90,37 @@ FROM vw_orders_with_products
 GROUP BY product
 ORDER BY quantity_pursached DESC
 LIMIT 1
+
+/* calculates an estimated profit for each product (assumed to be 25% of the sale price) 
+and identifies the top 5 most profitable products based on the total quantity sold*/
+SELECT 
+    name,
+    ROUND(price * 0.25,2) AS estimated_profit ,
+    ROUND(SUM((p.price * oi.quantity* 0.25)),2) AS total_estimated_profit 
+FROM order_items oi
+JOIN products p
+ON p.id = oi.product_id
+GROUP BY name, price
+ORDER BY total_estimated_profit DESC
+LIMIT 5
+
+-- Increases the price by 10% for all products that have been sold more than 10 times in total
+SELECT 
+    SUM(oi.quantity) AS quantity_sold,
+    p.id
+FROM order_items oi
+JOIN products p
+ON p.id = oi.product_id
+GROUP BY p.id
+HAVING SUM(oi.quantity) > 10
+
+UPDATE products
+SET price = price + price * 0.10
+WHERE products.id IN (
+    SELECT p.id
+    FROM order_items oi
+    JOIN products p
+    ON p.id = oi.product_id
+    GROUP BY p.id
+    HAVING SUM(oi.quantity) > 10
+)
